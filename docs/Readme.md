@@ -14,7 +14,7 @@ Este repositório contém os materiais do artigo "Inequalities in BMI, Overweigh
 ## Como Reproduzir os Resultados
 1. Clone este repositório: `git clone https://github.com/sostenesas/inequalities-bmi-brazil.git`
 2. Instale as dependências (e.g., R, pacotes como `tidyverse`, `oaxaca`, `MatchIt`).
-3. Execute os scripts em `code/` na ordem: ___.
+3. Execute os scripts em `code/` na ordem: 'analise_pns_2013.R', 'analise_pns2019_R.R', 'analise_pns_2013_2019_mean.R' e 'analise_pns_2013_2019_expl.R' .
 4. Os resultados serão gerados em `figures/` e `tables/`.
 
 ## Dados
