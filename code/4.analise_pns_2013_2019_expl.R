@@ -1,4 +1,4 @@
-# Script: analise_pns_2013_2019_expl.R
+# Script: code/analise_pns_2013_2019_expl.R
 # Descrição: Este script carrega os dados combinados da PNS 2013 e 2019, cria uma tabela
 # ponderada com proporções de faixas de IMC por diferentes variáveis (faixa etária, região,
 # sexo, situação censitária, escolaridade, estado civil, renda, cor/raça), e gera gráficos
@@ -9,10 +9,18 @@ library(dplyr)      # Para manipulação de dados (group_by, mutate, etc.)
 library(ggplot2)    # Para criação de gráficos
 library(survey)     # Para análises com pesos amostrais
 
+# --- Cria os Diretórios Necessários ---
+# Cria os diretórios figures/ e tables/ na raiz do projeto, se não existirem
+# O script está em code/, então usamos ../ para subir um nível até a raiz
+dir.create("../figures", showWarnings = FALSE)
+dir.create("../tables", showWarnings = FALSE)
+dir.create("../data", showWarnings = FALSE)
+
 # --- Carrega os Dados Combinados ---
 # Carrega o dataframe combinado de 2013 e 2019, gerado anteriormente pelos scripts
 # data_preparation_pns2013.R e data_preparation_pns2019.R
-load("pns_2013_2019.RData")
+# Usa o caminho absoluto inicialmente para evitar erros
+load("C:/Users/Sóstenes/OneDrive - Insper - Instituto de Ensino e Pesquisa/Documentos/Projeto diss/inequalities-bmi-brazil/data/pns_2013_2019.RData")
 
 # --- Cria o Objeto de Desenho Amostral ---
 # Define o desenho amostral usando o pacote survey para aplicar os pesos amostrais
@@ -146,18 +154,19 @@ p6 <- df1_tab %>%
   facet_wrap(vars(ano, sexo), nrow = 4, ncol = 2)
 
 # --- Salva os Gráficos como Arquivos PNG ---
-# Salva os gráficos no diretório figures/ (crie o diretório se não existir)
+# Salva os gráficos no diretório figures/ na raiz do projeto
+# O script está em code/, então usamos ../ para subir um nível até a raiz
 # As dimensões (8x6 polegadas) e resolução (300 DPI) são adequadas para publicação
-ggsave("figures/fig_proportions_imc_age.png", plot = p1, width = 8, height = 8, dpi = 300)
-ggsave("figures/fig_proportions_imc_region.png", plot = p2, width = 8, height = 6, dpi = 300)
-ggsave("figures/fig_proportions_imc_income.png", plot = p3, width = 8, height = 6, dpi = 300)
-ggsave("figures/fig_proportions_imc_education.png", plot = p4, width = 8, height = 6, dpi = 300)
-ggsave("figures/fig_proportions_imc_marital_status.png", plot = p5, width = 8, height = 6, dpi = 300)
-ggsave("figures/fig_proportions_imc_race.png", plot = p6, width = 8, height = 8, dpi = 300)
+ggsave("../figures/fig_proportions_imc_age.png", plot = p1, width = 8, height = 8, dpi = 300)
+ggsave("../figures/fig_proportions_imc_region.png", plot = p2, width = 8, height = 6, dpi = 300)
+ggsave("../figures/fig_proportions_imc_income.png", plot = p3, width = 8, height = 6, dpi = 300)
+ggsave("../figures/fig_proportions_imc_education.png", plot = p4, width = 8, height = 6, dpi = 300)
+ggsave("../figures/fig_proportions_imc_marital_status.png", plot = p5, width = 8, height = 6, dpi = 300)
+ggsave("../figures/fig_proportions_imc_race.png", plot = p6, width = 8, height = 8, dpi = 300)
 
 # --- Salva a Tabela de Proporções como CSV ---
-# Salva a tabela de proporções no diretório tables/ para uso posterior
-write.csv(df1_tab, file = "tables/proportions_imc.csv", row.names = FALSE)
+# Salva a tabela de proporções no diretório tables/ na raiz do projeto
+write.csv(df1_tab, file = "../tables/proportions_imc.csv", row.names = FALSE)
 
 # --- Opcional: Exibe os Gráficos no R ---
 # Descomente as linhas abaixo para visualizar os gráficos no RStudio ou console

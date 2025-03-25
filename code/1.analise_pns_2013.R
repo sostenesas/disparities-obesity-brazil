@@ -1,6 +1,7 @@
-# Script: analise_pns2013.R
+# Script: code/analise_pns2013.R
 # Descrição: Este script carrega os dados da PNS 2013, realiza a limpeza e transformação
 # das variáveis, e cria um conjunto de dados final para análise de desigualdades em IMC.
+# O conjunto de dados final será salvo na pasta data/ do projeto inequalities-bmi-brazil.
 
 # Carrega os pacotes necessários
 library(dplyr)      # Para manipulação de dados
@@ -8,13 +9,17 @@ library(ggplot2)    # Para visualizações (não usado diretamente aqui, mas pod
 library(tidyverse)  # Conjunto de pacotes para manipulação e visualização de dados
 library(survey)     # Para análises com pesos amostrais
 
+# Cria o diretório data/ na raiz do projeto, se não existir
+# O script está em code/, então usamos ../ para subir um nível até a raiz
+dir.create("../data", showWarnings = FALSE)
+
 # Carrega os dados brutos da PNS 2013
-# Altere o caminho para o local onde o arquivo está no seu computador
-load("C:\\Users\\Sóstenes\\OneDrive - Insper - Instituto de Ensino e Pesquisa\\Documentos\\Projeto diss\\inequalities-bmi-brazil\\data\\pns_2013.Rdata")
+# Usa o caminho absoluto fornecido originalmente
+load("C:/Users/Sóstenes/OneDrive - Insper - Instituto de Ensino e Pesquisa/Documentos/Projeto diss/inequalities-bmi-brazil/data/pns_2013.Rdata")
 
 # --- Limpeza Inicial e Cálculo de Pesos Amostrais ---
 # Filtra registros válidos para o módulo P (M001 == 1 indica participação no módulo)
-pns2013.1 <- pns2013 %>% filter(M001 == 1)
+pns2013.1 <- PNS_2013 %>% filter(M001 == 1)
 
 # Calcula o peso amostral ajustado para os moradores selecionados
 # V00291 é o peso original; ajusta para a população total (60202/145572211)
@@ -271,8 +276,9 @@ pns2013.2 <- pns2013.1 %>% select(UPA_PNS, V0024, peso_morador_selec, UF, regiao
                                   Q008P, Q014P, diabetes, h_arterial, col_alto, AVC,
                                   depr_, atv_fis, min_atv_fis, p_saude, fumo)
 
-# Salva o conjunto de dados final como um arquivo RData
-save(pns2013.2, file = "pns2013.2.RData")
+# Salva o conjunto de dados final como um arquivo RData no diretório data/
+# Usa o mesmo caminho absoluto para salvar o arquivo
+save(pns2013.2, file = "C:/Users/Sóstenes/OneDrive - Insper - Instituto de Ensino e Pesquisa/Documentos/Projeto diss/inequalities-bmi-brazil/data/pns2013.2.RData")
 
 # Libera memória
 gc()

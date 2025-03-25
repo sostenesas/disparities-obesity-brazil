@@ -1,14 +1,19 @@
-# Script: analise_pns2019.R
+# Script: code/analise_pns_2019.R
 # Descrição: Este script carrega os dados da PNS 2019, realiza a limpeza e transformação
 # das variáveis, e cria um conjunto de dados final para análise de desigualdades em IMC.
+# O conjunto de dados final será salvo na pasta data/ do projeto inequalities-bmi-brazil.
 
 # Carrega os pacotes necessários
 library(tidyr)     # Para manipulação de dados (e.g., drop_na, pivot)
 library(survey)    # Para análises com pesos amostrais
 
+# Cria o diretório data/ na raiz do projeto, se não existir
+# O script está em code/, então usamos ../ para subir um nível até a raiz
+dir.create("../data", showWarnings = FALSE)
+
 # Carrega os dados brutos da PNS 2019
-# Altere o caminho para o local onde o arquivo está no seu computador
-load("C:\\Users\\Sóstenes\\OneDrive - Insper - Instituto de Ensino e Pesquisa\\Documentos\\Projeto diss\\inequalities-bmi-brazil\\data\\pns_2019.rdata")
+# Usa o caminho absoluto fornecido originalmente
+load("C:/Users/Sóstenes/OneDrive - Insper - Instituto de Ensino e Pesquisa/Documentos/Projeto diss/inequalities-bmi-brazil/data/pns_2019.rdata")
 
 # --- Limpeza Inicial e Cálculo de Pesos Amostrais ---
 # Filtra registros de moradores selecionados para antropometria (V0025B == 1)
@@ -270,8 +275,9 @@ pns2019.2 <- pns2019.1 %>% select(UPA_PNS, V0024, peso_morador_selec, UF, regiao
                                   Q008P, Q014P, diabetes, h_arterial, col_alto, AVC,
                                   depr_, atv_fis, min_atv_fis, p_saude, fumo)
 
-# Salva o conjunto de dados final como um arquivo RData
-save(pns2019.2, file = "pns2019.2.RData")
+# Salva o conjunto de dados final como um arquivo RData no diretório data/
+# Usa o mesmo caminho absoluto para salvar o arquivo
+save(pns2019.2, file = "C:/Users/Sóstenes/OneDrive - Insper - Instituto de Ensino e Pesquisa/Documentos/Projeto diss/inequalities-bmi-brazil/data/pns2019.2.RData")
 
 # Libera memória
 gc()
