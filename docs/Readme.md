@@ -1,6 +1,6 @@
-# Inequalities in BMI, Overweight and Obesity in Brazil
+# Disparities in Obesity Across Brazil:
 
-Este repositório contém os materiais do artigo "Inequalities in BMI, Overweight and Obesity in Brazil: A Multimodel Analysis of Regional, Demographic and Health Factors".
+Este repositório contém os materiais do artigo "Disparities in Obesity Across Brazil: A Multimodel Analysis of Regional, Demographic, and Health Drivers".
 
 ## Estrutura do Repositório
 - **manuscript/**: Manuscrito do artigo (word).
