@@ -1,4 +1,4 @@
-# Script: prevalence_analysis_pns_2013_2019.R
+# Script: code/prevalence_analysis_pns_2013_2019.R
 # Descrição: Este script carrega os dados combinados da PNS 2013 e 2019, atualiza o desenho
 # amostral com novas variáveis (log da renda, quintis de renda, sobrepeso/obesidade), calcula
 # prevalências ponderadas de sobrepeso/obesidade por diferentes variáveis, e gera gráficos para
@@ -10,10 +10,18 @@ library(dplyr)      # Para manipulação de dados (group_by, summarise, etc.)
 library(ggplot2)    # Para criação de gráficos
 library(tidyr)      # Para manipulação de dados (usado implicitamente por dplyr)
 
+# --- Cria os Diretórios Necessários ---
+# Cria os diretórios figures/, tables/ e data/ na raiz do projeto, se não existirem
+# O script está em code/, então usamos ../ para subir um nível até a raiz
+dir.create("../figures", showWarnings = FALSE)
+dir.create("../tables", showWarnings = FALSE)
+dir.create("../data", showWarnings = FALSE)
+
 # --- Carrega os Dados Combinados ---
 # Carrega o dataframe combinado de 2013 e 2019, gerado anteriormente pelos scripts
 # data_preparation_pns2013.R e data_preparation_pns2019.R, e combinado em analysis_pns_2013_2019.R
-load("pns_2013_2019.RData")
+# Usa o caminho absoluto inicialmente para evitar erros
+load("C:/Users/Sóstenes/OneDrive - Insper - Instituto de Ensino e Pesquisa/Documentos/Projeto diss/inequalities-bmi-brazil/data/pns_2013_2019.RData")
 
 # --- Cria o Objeto de Desenho Amostral ---
 # Define o desenho amostral usando o pacote survey para aplicar os pesos amostrais
@@ -115,7 +123,6 @@ p3 <- ggplot(df_prevalence, aes(x = reorder(regiao, prevalence), y = prevalence,
   facet_grid(vars(sit_cens))
 
 # Gráfico 4: Dispersão entre IMC e idade, colorido por faixa de IMC e segmentado por ano
-# NOTA: O objeto df2_tab não existe no script. Vou assumir que o correto é usar df_weighted
 p4 <- ggplot(df_weighted, aes(x = IMC, y = idade, colour = fx_imc)) +
   geom_point(size = 0.5, alpha = 0.6) +
   scale_color_brewer(palette = "BrBG", direction = 1) +  # Usa a paleta BrBG para as faixas de IMC
@@ -131,17 +138,18 @@ p4 <- ggplot(df_weighted, aes(x = IMC, y = idade, colour = fx_imc)) +
   facet_wrap(vars(ano))
 
 # --- Salva os Gráficos como Arquivos PNG ---
-# Salva os gráficos no diretório figures/ (crie o diretório se não existir)
+# Salva os gráficos no diretório figures/ na raiz do projeto
+# O script está em code/, então usamos ../ para subir um nível até a raiz
 # As dimensões (8x6 polegadas) e resolução (300 DPI) são adequadas para publicação
-ggsave("figures/fig_scatter_income_imc.png", plot = p1, width = 8, height = 6, dpi = 300)
-ggsave("figures/fig_prevalence_income_sex.png", plot = p2, width = 8, height = 6, dpi = 300)
-ggsave("figures/fig_prevalence_region_sit_cens.png", plot = p3, width = 8, height = 6, dpi = 300)
-ggsave("figures/fig_scatter_imc_age.png", plot = p4, width = 8, height = 6, dpi = 300)
+ggsave("../figures/fig_scatter_income_imc.png", plot = p1, width = 8, height = 6, dpi = 300)
+ggsave("../figures/fig_prevalence_income_sex.png", plot = p2, width = 8, height = 6, dpi = 300)
+ggsave("../figures/fig_prevalence_region_sit_cens.png", plot = p3, width = 8, height = 6, dpi = 300)
+ggsave("../figures/fig_scatter_imc_age.png", plot = p4, width = 8, height = 6, dpi = 300)
 
 # --- Salva a Tabela de Prevalências como CSV ---
-# Salva as tabelas de prevalências no diretório tables/ para uso posterior
-write.csv(df_agg, file = "tables/prevalence_by_sex_education_race.csv", row.names = FALSE)
-write.csv(df_prevalence, file = "tables/prevalence_by_region_sit_cens.csv", row.names = FALSE)
+# Salva as tabelas de prevalências no diretório tables/ na raiz do projeto
+write.csv(df_agg, file = "../tables/prevalence_by_sex_education_race.csv", row.names = FALSE)
+write.csv(df_prevalence, file = "../tables/prevalence_by_region_sit_cens.csv", row.names = FALSE)
 
 # --- Opcional: Exibe os Gráficos no R ---
 # Descomente as linhas abaixo para visualizar os gráficos no RStudio ou console
