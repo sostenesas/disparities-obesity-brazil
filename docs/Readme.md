@@ -1,4 +1,4 @@
-# Disparities in Obesity Across Brazil:
+# Disparities in Obesity Across Brazil
 
 Este repositório contém os materiais do artigo "Disparities in Obesity Across Brazil: A Multimodel Analysis of Regional, Demographic, and Health Drivers".
 
