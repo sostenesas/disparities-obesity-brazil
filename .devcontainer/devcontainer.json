@@ -1,0 +1,6 @@
+{
+  "name": "R + targets",
+  "image": "rocker/r-ver:4.3.3",
+  "features": {},
+  "postCreateCommand": "R -q -e 'install.packages(c(\"targets\",\"dplyr\",\"tibble\"), repos=\"https://cloud.r-project.org\")'"
+}
