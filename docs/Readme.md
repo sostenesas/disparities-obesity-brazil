@@ -12,10 +12,14 @@ Este repositório contém os materiais do artigo "Disparities in Obesity Across 
 - **references/**: Arquivos de referências (BibTeX).
 
 ## Como Reproduzir os Resultados
-1. Clone este repositório: `git clone https://github.com/sostenesas/inequalities-bmi-brazil.git`
-2. Instale as dependências (e.g., R, pacotes como `tidyverse`, `oaxaca`, `MatchIt`).
-3. Execute os scripts em `code/` na ordem: '1.analise_pns_2013.R', '2.analise_pns2019_R.R', '3.analise_pns_2013_2019_mean.R' e assim por diante.
-4. Os resultados serão gerados em `figures/` e `tables/`.
+1. Clone este repositório:
+
+git clone https://github.com/sostenesas/disparities-obesity-brazil.git
+cd disparities-obesity-brazil
+
+3. Instale as dependências (e.g., R, pacotes como `tidyverse`, `oaxaca`, `MatchIt`).
+4. Execute os scripts em `code/` na ordem: '1.analise_pns_2013.R', '2.analise_pns2019_R.R', '3.analise_pns_2013_2019_mean.R' e assim por diante.
+5. Os resultados serão gerados em `figures/` e `tables/`.
 
 ## Dados
 Os dados são provenientes da Pesquisa Nacional de Saúde (PNS) 2013 e 2019. Consulte `data/data_description.md` para instruções de acesso via IBGE.
