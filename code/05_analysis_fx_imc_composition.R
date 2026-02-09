@@ -1,0 +1,63 @@
+# R/05_analysis_fx_imc_composition.R
+source("R/00_config.R")
+
+df <- readRDS(here("data","derived","pns_2013_2019_analytic.rds"))
+
+des <- svydesign(
+  id = ~psu,
+  strata = ~strata,
+  weights = ~weight_norm,
+  data = df,
+  nest = TRUE
+) %>% srvyr::as_survey_design()
+
+# Para composição de categoria (fx_imc), crie dummies 0/1 e estime proporções com SE/IC.
+df2 <- df %>%
+  mutate(
+    imc_abaixo = as.integer(fx_imc == "abaixo do peso"),
+    imc_normal = as.integer(fx_imc == "normal"),
+    imc_sobre  = as.integer(fx_imc == "sobrepeso"),
+    imc_obes   = as.integer(fx_imc == "obesidade")
+  )
+
+des2 <- des %>% update(
+  imc_abaixo = df2$imc_abaixo,
+  imc_normal = df2$imc_normal,
+  imc_sobre  = df2$imc_sobre,
+  imc_obes   = df2$imc_obes
+)
+
+# (1) Por idade x ano x sexo x situação censitária (corrigindo o bug do facet)
+comp_age <- des2 %>%
+  group_by(ano, sexo, sit_cens, fx_idade) %>%
+  summarize(
+    abaixo = survey_mean(imc_abaixo, vartype=c("ci"), na.rm=TRUE),
+    normal = survey_mean(imc_normal, vartype=c("ci"), na.rm=TRUE),
+    sobre  = survey_mean(imc_sobre,  vartype=c("ci"), na.rm=TRUE),
+    obes   = survey_mean(imc_obes,   vartype=c("ci"), na.rm=TRUE),
+    .groups="drop"
+  ) %>%
+  pivot_longer(cols = c(abaixo, normal, sobre, obes),
+               names_to = "fx_imc",
+               values_to = "prop") %>%
+  mutate(
+    fx_imc = recode(fx_imc,
+      abaixo="abaixo do peso",
+      normal="normal",
+      sobre="sobrepeso",
+      obes="obesidade"
+    )
+  )
+
+write_csv(comp_age, here("outputs","tables","composition_fx_imc_age_sex_sitcens.csv"))
+
+p_age <- ggplot(comp_age, aes(x=fx_idade, y=prop, fill=fx_imc)) +
+  geom_col(position="fill") +
+  facet_wrap(vars(ano, sexo, sit_cens), nrow=4) +
+  labs(x="Faixa etária", y="Proporção", fill="Faixa IMC",
+       title="Composição de faixas de IMC (ponderado)") +
+  theme(axis.text.x = element_text(angle=45, hjust=1),
+        legend.position="bottom")
+
+ggsave(here("outputs","figures","fig_fx_imc_composition_age.png"), p_age, width=10, height=8, dpi=300)
+message("✅ Composição (fx_imc) corrigida e salva.")

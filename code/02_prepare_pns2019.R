@@ -1,0 +1,119 @@
+# R/02_prepare_pns2019.R
+source("R/00_config.R")
+
+# Carrega PNS 2019 (espera objeto PNS_2019 dentro do RData)
+stopifnot(file.exists(PNS2019_RAW_RDATA))
+load(PNS2019_RAW_RDATA)
+
+stopifnot(exists("PNS_2019"))
+df19_raw <- PNS_2019
+
+# 1) Seleção de elegíveis + pesos
+df19 <- df19_raw %>%
+  filter(V0025B == 1) %>%              # antropometria (como no seu script antigo)
+  filter(C008 >= 18) %>%               # 18+
+  filter(!is.na(V00301)) %>%
+  mutate(
+    ano = 2019L,
+    psu = UPA_PNS,
+    strata = V0024,
+    weight = if (USE_LEGACY_WEIGHT_SCALING) V00301 * (7060 / 168426190) else V00301
+  ) %>%
+  filter(!is.na(psu), !is.na(strata), !is.na(weight))
+
+# 2) Variáveis principais (harmonizadas)
+df19 <- df19 %>%
+  transmute(
+    # desenho amostral
+    ano, psu, strata, weight,
+
+    # geografia
+    UF = as.numeric(V0001),
+    regiao = case_when(
+      UF >= 10 & UF < 20 ~ "Norte",
+      UF >= 20 & UF < 30 ~ "Nordeste",
+      UF >= 30 & UF < 40 ~ "Sudeste",
+      UF >= 40 & UF < 50 ~ "Sul",
+      UF >= 50 & UF < 60 ~ "Centro-Oeste",
+      TRUE ~ NA_character_
+    ),
+    sit_cens = factor(V0026, levels = c(1,2), labels = c("urbano","rural")),
+    urbano = as.integer(sit_cens == "urbano"),
+
+    # demografia
+    sexo = factor(C006, levels = c(1,2), labels = c("homem","mulher")),
+    homem = as.integer(sexo == "homem"),
+    idade = as.numeric(C008),
+    fx_idade = cut(
+      idade, breaks = c(18, 30, 45, 60, 75, Inf),
+      labels = c("18 a 29 anos","30 a 44 anos","45 a 59 anos","60 a 74 anos","75 anos ou mais"),
+      right = FALSE, ordered_result = TRUE
+    ),
+
+    cor = fct_recode(
+      factor(C009),
+      "Branco"="1",
+      "Preto"="2",
+      "Amarelo"="3",
+      "Pardo"="4",
+      "Indígena"="5",
+      "Ignorado"="9"
+    ),
+    branco = as.integer(cor == "Branco"),
+
+    fx_esc = fct_recode(
+      factor(VDD004A),
+      "Sem instrução"="1",
+      "Fundamental incompleto"="2",
+      "Fundamental completo"="3",
+      "Médio incompleto"="4",
+      "Médio completo"="5",
+      "Superior incompleto"="6",
+      "Superior completo"="7"
+    ),
+
+    # renda
+    rend_dom = as.numeric(VDF002),
+    log_rend_dom = log(pmax(rend_dom, 1)),
+    rend_per_capita = factor(
+      dplyr::case_when(
+        VDF004 %in% 1:2 ~ 1L,
+        VDF004 %in% 3   ~ 2L,
+        VDF004 %in% 4   ~ 3L,
+        VDF004 %in% 5   ~ 4L,
+        TRUE            ~ 5L
+      ),
+      levels = 1:5,
+      labels = c("Até 1/2 SM","1/2 até 1 SM","1 até 2 SM","2 até 3 SM","Mais de 3 SM")
+    ),
+
+    # estado civil
+    est_civil = fct_recode(
+      factor(C011),
+      "Casado(a)"="1",
+      "Separado(a)*"="2",
+      "Viúvo(a)"="3",
+      "Solteiro(a)"="4",
+      "Ignorado"="9"
+    ),
+    solteiro = as.integer(est_civil == "Solteiro(a)"),
+
+    # antropometria
+    altura_cm = as.numeric(W00203),
+    peso_kg   = as.numeric(W00103)
+  ) %>%
+  filter(!is.na(altura_cm), altura_cm >= 100) %>%
+  mutate(
+    altura_m = altura_cm / 100,
+    IMC = peso_kg / (altura_m^2),
+    exc_peso = as.integer(IMC >= 25),
+    obesity  = as.integer(IMC >= 30),
+    fx_imc = cut(
+      IMC, breaks = c(0, 18.5, 25, 30, Inf),
+      labels = c("abaixo do peso","normal","sobrepeso","obesidade"),
+      right = FALSE
+    )
+  )
+
+saveRDS(df19, here("data","derived","pns2019_clean.rds"))
+message("✅ 2019 pronto: data/derived/pns2019_clean.rds")
