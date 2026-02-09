@@ -26,4 +26,4 @@ p1 <- ggplot(mean_imc_age_sex, aes(x = fx_idade, y = imc_mean, group = interacti
   theme(axis.text.x = element_text(angle=45, hjust=1))
 
 ggsave(here("outputs","figures","fig_imc_mean_age_sex.png"), p1, width=9, height=5, dpi=300)
-message("✅ Médias (ponderadas) prontas.")
+message("(ok) Médias (ponderadas) prontas.")
