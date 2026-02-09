@@ -1,5 +1,5 @@
 # R/06_analysis_prevalence.R
-source("R/00_config.R")
+source("R/R/00_config")
 
 df <- readRDS(here("data","derived","pns_2013_2019_analytic.rds"))
 
@@ -41,4 +41,4 @@ p_reg <- ggplot(prev_region, aes(x=reorder(regiao, prev_exc_peso), y=prev_exc_pe
   theme(legend.position="bottom")
 
 ggsave(here("outputs","figures","fig_prev_region_sitcens.png"), p_reg, width=9, height=5, dpi=300)
-message("✅ Prevalências (survey) prontas.")
+message("(ok) Prevalências (survey) prontas.")

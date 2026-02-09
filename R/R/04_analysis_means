@@ -1,0 +1,23 @@
+source("R/R/00_config")
+df <- readRDS(here("data","derived","pns_2013_2019_analytic.rds"))
+
+des <- survey::svydesign(
+  id = ~psu,
+  strata = ~strata,
+  weights = ~weight_norm,
+  data = df,
+  nest = TRUE
+)
+
+# média de IMC por ano/idade/sexo (SEM srvyr)
+mean_imc_age_sex <- survey::svyby(
+  ~IMC,
+  ~ano + fx_idade + sexo,
+  des,
+  survey::svymean,
+  na.rm = TRUE,
+  vartype = c("se","ci")
+)
+
+mean_imc_age_sex <- as.data.frame(mean_imc_age_sex)
+readr::write_csv(mean_imc_age_sex, here("outputs","tables","mean_imc_age_sex.csv"))

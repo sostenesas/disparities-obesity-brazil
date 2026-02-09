@@ -1,0 +1,17 @@
+List of 4
+ $ n_total    : int 65973
+ $ n_by_year  : tibble [2 × 2] (S3: tbl_df/tbl/data.frame)
+  ..$ ano: int [1:2] 2013 2019
+  ..$ n  : int [1:2] 59402 6571
+ $ missing_key: tibble [1 × 4] (S3: tbl_df/tbl/data.frame)
+  ..$ missing_psu   : int 0
+  ..$ missing_strata: int 0
+  ..$ missing_weight: int 0
+  ..$ missing_imc   : int 0
+ $ imc_summary: tibble [1 × 3] (S3: tbl_df/tbl/data.frame)
+  ..$ p1 : Named num 0.219
+  .. ..- attr(*, "names")= chr "1%"
+  ..$ p50: Named num 22.4
+  .. ..- attr(*, "names")= chr "50%"
+  ..$ p99: Named num 372
+  .. ..- attr(*, "names")= chr "99%"

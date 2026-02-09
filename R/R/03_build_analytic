@@ -1,10 +1,20 @@
 # R/03_build_analytic.R
-source("R/00_config.R")
+source("R/R/00_config")
 
 df13 <- readRDS(here("data","derived","pns2013_clean.rds"))
 df19 <- readRDS(here("data","derived","pns2019_clean.rds"))
 
-df <- bind_rows(df13, df19)
+df13 <- df13 %>% mutate(rend_per_capita = as.character(rend_per_capita))
+df19 <- df19 %>% mutate(rend_per_capita = as.character(rend_per_capita))
+
+df <- bind_rows(df13, df19) %>%
+  mutate(
+    rend_per_capita = factor(
+      rend_per_capita,
+      levels = c("Até 1/2 SM","1/2 até 1 SM","1 até 2 SM","2 até 3 SM","Mais de 3 SM"),
+      ordered = TRUE
+    )
+  )
 
 # Normalização opcional (não muda estimativas, só escala numérica)
 df <- df %>%
@@ -31,4 +41,4 @@ audit <- list(
 
 write_lines(capture.output(str(audit, max.level = 3)),
             here("outputs","tables","audit_pipeline.txt"))
-message("✅ Analytic dataset + auditoria: data/derived/pns_2013_2019_analytic.rds")
+message("(ok) Analytic dataset + auditoria: data/derived/pns_2013_2019_analytic.rds")

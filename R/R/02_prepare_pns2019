@@ -1,28 +1,28 @@
-# R/01_prepare_pns2013.R
-source("R/00_config.R")
+# R/02_prepare_pns2019.R
+source("R/R/00_config")
 
-# Carrega PNS 2013 (espera objeto PNS_2013 dentro do RData)
-stopifnot(file.exists(PNS2013_RAW_RDATA))
-load(PNS2013_RAW_RDATA)
+# Carrega PNS 2019 (espera objeto PNS_2019 dentro do RData)
+stopifnot(file.exists(PNS2019_RAW_RDATA))
+load(PNS2019_RAW_RDATA)
 
-stopifnot(exists("PNS_2013"))
-df13_raw <- PNS_2013
+stopifnot(exists("PNS_2019"))
+df19_raw <- PNS_2019
 
 # 1) Seleção de elegíveis + pesos
-df13 <- df13_raw %>%
-  filter(M001 == 1) %>%                # módulo P (como no seu script antigo)
+df19 <- df19_raw %>%
+  filter(V0025B == 1) %>%              # antropometria (como no seu script antigo)
   filter(C008 >= 18) %>%               # 18+
-  filter(!is.na(V00291)) %>%
+  filter(!is.na(V00301)) %>%
   mutate(
-    ano = 2013L,                       # força ano consistente
+    ano = 2019L,
     psu = UPA_PNS,
     strata = V0024,
-    weight = if (USE_LEGACY_WEIGHT_SCALING) V00291 * (60202 / 145572211) else V00291
+    weight = if (USE_LEGACY_WEIGHT_SCALING) V00301 * (7060 / 168426190) else V00301
   ) %>%
   filter(!is.na(psu), !is.na(strata), !is.na(weight))
 
 # 2) Variáveis principais (harmonizadas)
-df13 <- df13 %>%
+df19 <- df19 %>%
   transmute(
     # desenho amostral
     ano, psu, strata, weight,
@@ -73,32 +73,34 @@ df13 <- df13 %>%
     ),
 
     # renda
-    rend_dom = as.numeric(VDF003),
-    log_rend_dom = log(pmax(rend_dom, 1)),  # evita log(0)
-    rend_per_capita = cut(
-      rend_dom,
-      breaks = c(-Inf, 339, 678, 1356, 2034, Inf),
-      labels = c("Até 1/2 SM","1/2 até 1 SM","1 até 2 SM","2 até 3 SM","Mais de 3 SM"),
-      right = TRUE, ordered_result = TRUE
+    rend_dom = as.numeric(VDF002),
+    log_rend_dom = log(pmax(rend_dom, 1)),
+    rend_per_capita = factor(
+      dplyr::case_when(
+        VDF004 %in% 1:2 ~ 1L,
+        VDF004 %in% 3   ~ 2L,
+        VDF004 %in% 4   ~ 3L,
+        VDF004 %in% 5   ~ 4L,
+        TRUE            ~ 5L
+      ),
+      levels = 1:5,
+      labels = c("Até 1/2 SM","1/2 até 1 SM","1 até 2 SM","2 até 3 SM","Mais de 3 SM")
     ),
 
     # estado civil
-    est_civil = fct_recode(
-      factor(C011),
-      "Casado(a)"="1",
-      "Separado(a)*"="2",
-      "Separado(a)*"="4",
-      "Viúvo(a)"="3",
-      "Solteiro(a)"="5",
-      "Ignorado"="9"
-    ),
-    solteiro = as.integer(est_civil == "Solteiro(a)"),
+  est_civil = case_when(
+  C011 == 1 ~ "Casado(a)",
+  C011 %in% c(2,4) ~ "Separado(a)*",   # se isso vale para seu ano
+  C011 == 3 ~ "Viúvo(a)",
+  C011 %in% c(4,5) ~ "Solteiro(a)",    # ajuste conforme codificação do ano
+  TRUE ~ "Ignorado"
+) |> factor(levels = c("Casado(a)","Separado(a)*","Viúvo(a)","Solteiro(a)","Ignorado")),
 
     # antropometria
     altura_cm = as.numeric(W00203),
     peso_kg   = as.numeric(W00103)
   ) %>%
-  filter(!is.na(altura_cm), altura_cm >= 100) %>%  # regra simples anti-outlier
+  filter(!is.na(altura_cm), altura_cm >= 100) %>%
   mutate(
     altura_m = altura_cm / 100,
     IMC = peso_kg / (altura_m^2),
@@ -111,5 +113,5 @@ df13 <- df13 %>%
     )
   )
 
-saveRDS(df13, here("data","derived","pns2013_clean.rds"))
-message("✅ 2013 pronto: data/derived/pns2013_clean.rds")
+saveRDS(df19, here("data","derived","pns2019_clean.rds"))
+message("(ok) 2019 pronto: data/derived/pns2019_clean.rds")

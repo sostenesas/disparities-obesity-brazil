@@ -1,5 +1,5 @@
 # R/05_analysis_fx_imc_composition.R
-source("R/00_config.R")
+source("R/R/00_config")
 
 df <- readRDS(here("data","derived","pns_2013_2019_analytic.rds"))
 
