@@ -1,0 +1,17 @@
+# R/10_strobe_flow.R
+# Camada 2: STROBE mínimo (por ano) + gancho para STROBE completo
+source("R/R/00_config")
+
+df <- readRDS(here("data","derived","pns_2013_2019_analytic.rds"))
+
+flow_min <- df %>%
+  group_by(ano) %>%
+  summarize(
+    N_analytic = n(),
+    missing_imc = sum(is.na(IMC)),
+    missing_weight = sum(is.na(weight)),
+    .groups="drop"
+  )
+
+readr::write_csv(flow_min, here("outputs","tables","strobe_flow_minimal.csv"))
+message("(ok) STROBE mínimo exportado.")

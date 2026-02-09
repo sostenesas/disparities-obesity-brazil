@@ -1,0 +1,16 @@
+# R/09_tables_for_paper.R
+# Camada 2: tabela legível (CSV)
+source("R/R/00_config")
+
+tab <- readr::read_csv(here("outputs","tables","models_tidy.csv"), show_col_types = FALSE) %>%
+  mutate(
+    term = stringr::str_replace_all(term, "factor\(ano\)", "ano:"),
+    term = stringr::str_replace_all(term, "^sexo", "sexo"),
+    term = stringr::str_replace_all(term, "^cor", "cor"),
+    term = stringr::str_replace_all(term, "^fx_idade", "idade"),
+    term = stringr::str_replace_all(term, "^fx_esc", "esc"),
+    term = stringr::str_replace_all(term, "^sit_cens", "sit_cens")
+  )
+
+readr::write_csv(tab, here("outputs","tables","models_tidy_pretty.csv"))
+message("(ok) Tabela 'pretty' exportada.")

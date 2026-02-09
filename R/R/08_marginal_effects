@@ -1,0 +1,82 @@
+# R/08_marginal_effects.R
+# Camada 2: AME e predições ajustadas (survey)
+source("R/R/00_config")
+
+obj <- readRDS(here("data","derived","models_layer2.rds"))
+des <- obj$des
+m_ob <- obj$m_ob
+m_exc <- obj$m_exc
+
+ame_factor_two_levels <- function(design, model, var, level_base, level_alt) {
+  d <- design$variables
+  d[[var]] <- as.factor(d[[var]])
+  lvls <- levels(d[[var]])
+  if (!(level_base %in% lvls) || !(level_alt %in% lvls)) stop("Níveis não encontrados")
+
+  d_base <- d; d_alt <- d
+  d_base[[var]] <- factor(level_base, levels = lvls)
+  d_alt[[var]]  <- factor(level_alt,  levels = lvls)
+
+  p_base <- as.numeric(predict(model, newdata = d_base, type = "response"))
+  p_alt  <- as.numeric(predict(model, newdata = d_alt,  type = "response"))
+
+  diff <- p_alt - p_base
+  des_eff <- update(design, diff = diff)
+
+  est <- svymean(~diff, des_eff, na.rm = TRUE)
+  ci  <- confint(est)
+
+  tibble::tibble(
+    outcome = as.character(formula(model))[2],
+    var = var,
+    base = level_base,
+    alt = level_alt,
+    ame = coef(est)[1],
+    se  = SE(est)[1],
+    ci_low = ci[1,1],
+    ci_high = ci[1,2]
+  )
+}
+
+predicted_prob_by <- function(design, model, by_vars) {
+  d <- design$variables
+  d$pred <- as.numeric(predict(model, type = "response"))
+  des2 <- update(design, pred = d$pred)
+  srvyr::as_survey_design(des2) %>%
+    dplyr::group_by(dplyr::across(dplyr::all_of(by_vars))) %>%
+    dplyr::summarize(pred = srvyr::survey_mean(pred, vartype=c("se","ci"), na.rm=TRUE), .groups="drop")
+}
+
+ame_tbl <- dplyr::bind_rows(
+  ame_factor_two_levels(des, m_ob,  "ano",  "2013", "2019"),
+  ame_factor_two_levels(des, m_exc, "ano",  "2013", "2019"),
+  ame_factor_two_levels(des, m_ob,  "sexo", "homem", "mulher"),
+  ame_factor_two_levels(des, m_exc, "sexo", "homem", "mulher")
+)
+
+cor_lvls <- levels(as.factor(des$variables$cor))
+if ("Branco" %in% cor_lvls && "Preto" %in% cor_lvls) {
+  ame_tbl <- dplyr::bind_rows(ame_tbl, ame_factor_two_levels(des, m_ob, "cor", "Branco", "Preto"))
+}
+if ("Branco" %in% cor_lvls && "Pardo" %in% cor_lvls) {
+  ame_tbl <- dplyr::bind_rows(ame_tbl, ame_factor_two_levels(des, m_ob, "cor", "Branco", "Pardo"))
+}
+
+readr::write_csv(ame_tbl, here("outputs","tables","ame_key_contrasts.csv"))
+
+pred_ob_by <- predicted_prob_by(des, m_ob, by_vars = c("ano","sexo","cor"))
+readr::write_csv(pred_ob_by, here("outputs","tables","pred_ob_by_ano_sexo_cor.csv"))
+
+pred_exc_by <- predicted_prob_by(des, m_exc, by_vars = c("ano","regiao","sit_cens"))
+readr::write_csv(pred_exc_by, here("outputs","tables","pred_exc_by_ano_regiao_sitcens.csv"))
+
+p1 <- ggplot(pred_ob_by, aes(x=cor, y=pred, group=factor(ano))) +
+  geom_point() + geom_line() +
+  facet_wrap(~sexo) +
+  labs(x="Cor/raça", y="Probabilidade ajustada de obesidade",
+       title="Predição ajustada (survey) de obesidade por cor e sexo") +
+  theme(axis.text.x = element_text(angle=45, hjust=1), legend.position="bottom")
+
+ggsave(here("outputs","figures","fig_pred_ob_by_cor_sexo.png"), p1, width=10, height=5, dpi=300)
+
+message("(ok) AMEs e predições ajustadas prontas.")

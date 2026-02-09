@@ -1,0 +1,53 @@
+# R/07_models.R
+# Camada 2: modelos principais (survey-correct) + salvamento de resultados
+source("R/R/00_config")
+
+df <- readRDS(here("data","derived","pns_2013_2019_analytic.rds"))
+
+des <- svydesign(
+  id = ~psu,
+  strata = ~strata,
+  weights = ~weight_norm,
+  data = df,
+  nest = TRUE
+)
+
+# MODELOS principais
+f_ob  <- obesity  ~ factor(ano) + sexo + fx_idade + cor + fx_esc + sit_cens + regiao
+f_exc <- exc_peso ~ factor(ano) + sexo + fx_idade + cor + fx_esc + sit_cens + regiao
+
+m_ob  <- svyglm(f_ob,  design = des, family = quasibinomial())
+m_exc <- svyglm(f_exc, design = des, family = quasibinomial())
+
+# Interação (disparidades): sexo × cor
+m_ob_int <- svyglm(obesity ~ factor(ano) + sexo*cor + fx_idade + fx_esc + sit_cens + regiao,
+                   design = des, family = quasibinomial())
+
+# Sensibilidade: renda (se existir)
+m_ob_renda <- NULL
+if ("log_rend_dom" %in% names(df)) {
+  m_ob_renda <- svyglm(obesity ~ factor(ano) + sexo + fx_idade + cor + fx_esc + sit_cens + regiao + log_rend_dom,
+                       design = des, family = quasibinomial())
+}
+
+tidy_svyglm <- function(model, model_name) {
+  b <- broom::tidy(model, conf.int = TRUE)
+  b$model <- model_name
+  b
+}
+
+tabs <- dplyr::bind_rows(
+  tidy_svyglm(m_ob, "obesity_main"),
+  tidy_svyglm(m_exc, "excesso_main"),
+  tidy_svyglm(m_ob_int, "obesity_interaction"),
+  if (!is.null(m_ob_renda)) tidy_svyglm(m_ob_renda, "obesity_plus_income") else NULL
+)
+
+readr::write_csv(tabs, here("outputs","tables","models_tidy.csv"))
+
+saveRDS(
+  list(des=des, m_ob=m_ob, m_exc=m_exc, m_ob_int=m_ob_int, m_ob_renda=m_ob_renda),
+  here("data","derived","models_layer2.rds")
+)
+
+message("(ok) Modelos (camada 2) salvos.")
