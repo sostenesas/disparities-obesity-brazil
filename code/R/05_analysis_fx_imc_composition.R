@@ -60,4 +60,4 @@ p_age <- ggplot(comp_age, aes(x=fx_idade, y=prop, fill=fx_imc)) +
         legend.position="bottom")
 
 ggsave(here("outputs","figures","fig_fx_imc_composition_age.png"), p_age, width=10, height=8, dpi=300)
-message("✅ Composição (fx_imc) corrigida e salva.")
+message("(ok) Composição (fx_imc) corrigida e salva.")
